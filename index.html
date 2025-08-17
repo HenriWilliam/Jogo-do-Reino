@@ -1,0 +1,455 @@
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>As Chaves da Liberdade — Jogo</title>
+  <meta name="description" content="Mini-jogo educativo cristão para crianças: memória, quebra-cabeça, quiz, ranking e pontuação. Tema: Graça, Reino e as chaves da liberdade (coragem, persistência, treino, obediência, desfrute e shabbat)."/>
+  <style>
+    :root{
+      --bg: #e6f5ff;
+      --primary: #ff9f1c;
+      --secondary: #2ec4b6;
+      --accent: #ffbf69;
+      --ink: #073b4c;
+      --card: #ffffff;
+      --good: #55a630;
+      --bad: #d62828;
+      --gold: #f1c40f;
+      --sky1:#b3e5ff; --sky2:#7fd0ff;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      color:var(--ink); background: linear-gradient(180deg,var(--sky1),var(--bg));
+      display:flex; align-items:center; justify-content:center;
+    }
+    .app{width:min(1100px,96vw); min-height:92vh; background:var(--card); border-radius:24px; box-shadow:0 12px 40px rgba(0,0,0,.12);
+      overflow:hidden; display:grid; grid-template-rows: 72px 1fr 56px;
+    }
+    header{background:linear-gradient(90deg,#ffce6b,var(--primary)); color:#653400; display:flex; align-items:center; gap:14px; padding:0 20px;}
+    header .logo{width:48px; height:48px; border-radius:12px; background: radial-gradient(circle at 30% 30%,#fff6cc,var(--gold)); display:grid; place-items:center; box-shadow:inset 0 2px 6px rgba(0,0,0,.15)}
+    header .logo:before{content:"🔑"; font-size:28px}
+    header h1{font-size: clamp(18px, 2.6vw, 26px); margin:0; font-weight:900; letter-spacing:.5px}main{padding:18px; background:
+  radial-gradient(1100px 350px at 50% 120%, #c6ffd0 0%, rgba(0,0,0,0) 60%),
+  linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.6));
+}
+
+footer{display:flex; align-items:center; justify-content:space-between; padding:0 16px; font-size:12px; background:#f8fafc; color:#3b4a54}
+
+.screen{display:none}
+.screen.active{display:block; animation:fade .25s ease both}
+@keyframes fade{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+
+.panel{background:#ffffffcc; backdrop-filter:saturate(140%) blur(6px); border-radius:22px; padding:18px; box-shadow:0 6px 24px rgba(0,0,0,.08)}
+
+.menu{display:grid; grid-template-columns: 1.2fr .8fr; gap:18px}
+.hero{
+  border-radius:22px; padding:24px; background:linear-gradient(180deg,#9ee7ff,#d9f7ff);
+  display:grid; grid-template-columns: 1fr 1fr; gap:18px; align-items:center;
+}
+.castle{height:220px; border-radius:18px; background: linear-gradient(180deg,#6bd1ff,#2aa7ff);
+  position:relative; overflow:hidden; box-shadow:inset 0 -60px 120px rgba(0,0,0,.15)}
+.castle .land{position:absolute; inset:auto 0 0 0; height:45%; background:radial-gradient(120% 120% at 50% 10%,#7fd57f,#36b24e)}
+.castle .keep{position:absolute; left:50%; top:34%; transform:translateX(-50%); width:190px; height:120px; background:#ffe8c6; border-radius:10px; box-shadow:0 6px 0 #e2c08e}
+.keep:before,.keep:after{content:""; position:absolute; width:54px; height:85px; top:-24px; background:#ffe8c6; border-radius:6px; box-shadow:0 5px 0 #e2c08e}
+.keep:before{left:-22px} .keep:after{right:-22px}
+.door{position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:56px; height:72px; background:#8d5524; border-radius:10px 10px 0 0; box-shadow: inset 0 8px 0 #6d421b}
+.girl{display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center}
+.avatar{width:120px; height:120px; border-radius:50%; background:radial-gradient(circle at 30% 30%,#fffbd6,#ffd166); display:grid; place-items:center; box-shadow:0 6px 18px rgba(0,0,0,.15)}
+.avatar:before{content:"👑"; font-size:60px}
+.cta{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+
+.btn{appearance:none; border:none; border-radius:14px; padding:12px 18px; font-weight:800; letter-spacing:.4px; cursor:pointer; box-shadow:0 4px 0 rgba(0,0,0,.12); transition:transform .06s ease, box-shadow .06s ease}
+.btn:active{transform:translateY(1px); box-shadow:0 2px 0 rgba(0,0,0,.12)}
+.btn.primary{background:linear-gradient(180deg,#ffd37f,var(--primary)); color:#623e00}
+.btn.blue{background:linear-gradient(180deg,#a8f7f0,var(--secondary)); color:#00383a}
+.btn.ghost{background:#fff; border:2px solid #dbe5ee; color:#31445a}
+
+.grid2{display:grid; grid-template-columns:repeat(2,1fr); gap:16px}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+
+.card{background: #fff; border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.card h3{margin:0 0 8px 0}
+
+.badge{display:inline-flex; align-items:center; gap:6px; background:#fff; border:2px dashed #ffd166; border-radius:999px; padding:6px 10px; font-weight:800; color:#7a4d00}
+
+.pill{display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; background:#eef6ff; color:#1e4e8c; font-weight:800}
+
+/* Level selection */
+.levels .key{display:flex; align-items:center; gap:10px; padding:14px; border-radius:14px; background:#fff7e0; border:1px solid #ffe7a3; cursor:pointer}
+.levels .key .ico{width:36px; height:36px; display:grid; place-items:center; border-radius:10px; background: radial-gradient(circle at 30% 30%, #fffad1, #ffd166)}
+.levels .key span{font-weight:900}
+
+/* Memory */
+.memory{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; max-width:520px; margin-inline:auto}
+.tile{position:relative; height:88px; border-radius:12px; cursor:pointer; transform-style:preserve-3d; transition:transform .35s ease}
+.tile .face{position:absolute; inset:0; display:grid; place-items:center; border-radius:12px; backface-visibility:hidden; font-size:34px; font-weight:900}
+.tile .back{background:linear-gradient(180deg,#c6f8ff,#7fe4ff); border:2px solid #56c9ff}
+.tile .front{transform:rotateY(180deg); background:#fff; border:2px solid #e3e8ef}
+.tile.flipped{transform:rotateY(180deg)}
+.tile.matched{filter:saturate(0) contrast(0.85) opacity(.65); cursor:default}
+
+/* Quiz */
+.quiz .q{font-weight:900; font-size:18px}
+.quiz .opt{display:block; padding:10px 12px; border-radius:12px; border:2px solid #e5eef6; margin-top:10px; cursor:pointer}
+.quiz .opt.correct{border-color:var(--good); background:#eaffe3}
+.quiz .opt.wrong{border-color:var(--bad); background:#ffe7e7}
+
+/* Puzzle (tile swap) */
+.puzzle{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:330px; margin:10px auto}
+.pz{width:106px; height:106px; border-radius:8px; background-size:318px 318px; background-image: radial-gradient(circle at 40% 30%, #fff8d1, #ffd166 42%, #ff9f1c 43%, #ffaa2b 70%),
+  linear-gradient(120deg, #7fd0ff 0 50%, #9ee7ff 50% 100%);
+  border:2px solid #fff; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.1)}
+
+/* Ranking */
+table{width:100%; border-collapse:separate; border-spacing:0 10px}
+th,td{text-align:left; padding:10px 12px}
+tbody tr{background:#fff; box-shadow:0 4px 12px rgba(0,0,0,.06)}
+thead th{font-size:12px; color:#587089}
+
+.hidden{display:none !important}
+
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="logo" aria-hidden="true"></div>
+      <h1>As Chaves da Liberdade</h1>
+      <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+        <span class="pill" id="rankBadge">Aprendiz do Reino</span>
+        <span class="badge" title="Pontos de Fé"><span>✨</span><b id="points">0</b></span>
+      </div>
+    </header><main>
+  <!-- MENU -->
+  <section class="screen active" id="menu">
+    <div class="menu">
+      <div class="hero">
+        <div>
+          <h2 style="margin:0 0 8px 0">Bem-vindo(a), príncipe/princesa!</h2>
+          <p style="margin:0 0 12px 0">Você entrou pela <b>Porta da Graça</b> (Ef 2:8-9). Agora, vamos aprender a viver no <b>Reino</b> (Mt 6:33) usando as <b>chaves da liberdade</b>! 💛</p>
+          <div class="cta">
+            <button class="btn primary" onclick="openScreen('levels')">Jogar</button>
+            <button class="btn blue" onclick="openScreen('ranking')">Ranking</button>
+            <button class="btn ghost" onclick="openScreen('config')">Configurações</button>
+          </div>
+        </div>
+        <div class="girl">
+          <div class="avatar" aria-hidden="true"></div>
+          <div class="panel">
+            <h3 style="margin:0 0 6px 0">Verso do dia</h3>
+            <small>“Cristo nos libertou para que sejamos realmente livres.” (Gl 5:1)</small>
+          </div>
+        </div>
+      </div>
+      <div class="castle panel">
+        <div class="keep">
+          <div class="door"></div>
+        </div>
+        <div class="land"></div>
+      </div>
+    </div>
+
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><h3>Graça → Entrada</h3><p>A porta se abriu de <b>graça</b>. Presente de Deus!</p></div>
+      <div class="card"><h3>Reino → Vida</h3><p>Aqui aprendemos a viver como <b>filhos do Rei</b>.</p></div>
+      <div class="card"><h3>Missão → Falar</h3><p>Levar o Evangelho a todos (Mt 24:14).</p></div>
+    </div>
+  </section>
+
+  <!-- LEVELS -->
+  <section class="screen" id="levels">
+    <div class="panel">
+      <h2 style="margin:0">Escolha uma Chave</h2>
+      <p style="margin:6px 0 14px">Ganhe pontos de fé, suba no ranking e torne-se <b>Mais que Vencedor</b>! 👑</p>
+      <div class="grid3 levels">
+        <div class="key" onclick="startMemory()"><div class="ico">🛡️</div><span>Coragem — Memória</span></div>
+        <div class="key" onclick="startQuiz()"><div class="ico">⚔️</div><span>Treino/Obediência — Quiz</span></div>
+        <div class="key" onclick="startPuzzle()"><div class="ico">🧩</div><span>Persistência — Quebra-cabeça</span></div>
+        <div class="key" onclick="openScreen('shabbat')"><div class="ico">🕊️</div><span>Desfrute & Shabbat — Descanso</span></div>
+      </div>
+      <div style="margin-top:14px; display:flex; gap:10px">
+        <button class="btn ghost" onclick="openScreen('menu')">⬅ Voltar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEMORY GAME -->
+  <section class="screen" id="memory">
+    <div class="panel">
+      <h2 style="margin:0 0 8px 0">Coragem — Jogo da Memória</h2>
+      <small>“Seja forte e corajoso!”</small>
+      <div class="memory" id="memoryGrid" style="margin-top:12px"></div>
+      <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+        <button class="btn ghost" onclick="openScreen('levels')">⬅ Sair</button>
+        <button class="btn primary" onclick="startMemory()">Reiniciar</button>
+        <span class="pill">Tentativas: <b id="memTries">0</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="screen" id="quiz">
+    <div class="panel quiz" id="quizBox"></div>
+  </section>
+
+  <!-- PUZZLE -->
+  <section class="screen" id="puzzle">
+    <div class="panel">
+      <h2 style="margin:0 0 6px 0">Persistência — Quebra-cabeça (troque os blocos)</h2>
+      <p style="margin:0 0 10px 0">Monte a figura da <b>Chave Dourada</b>. Clique em dois blocos para trocá-los.</p>
+      <div class="puzzle" id="puzzleGrid"></div>
+      <div style="display:flex; gap:10px; align-items:center; margin-top:10px">
+        <button class="btn ghost" onclick="openScreen('levels')">⬅ Sair</button>
+        <button class="btn primary" onclick="startPuzzle()">Reiniciar</button>
+        <span class="pill">Movimentos: <b id="pzMoves">0</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHABBAT / DESFRUTE -->
+  <section class="screen" id="shabbat">
+    <div class="panel">
+      <h2 style="margin:0 0 6px 0">Shabbat — Descanse no Senhor</h2>
+      <p style="margin:0">Respire 5 vezes profundamente. A cada ciclo você ganha <b>+2 pontos</b> de paz.</p>
+      <div class="card" style="text-align:center; margin-top:12px">
+        <div id="breath" style="font-size:54px; font-weight:900;">5</div>
+        <button class="btn blue" id="breathBtn">Iniciar Respiração</button>
+      </div>
+      <div style="margin-top:12px"><button class="btn ghost" onclick="openScreen('levels')">⬅ Voltar</button></div>
+    </div>
+  </section>
+
+  <!-- RANKING -->
+  <section class="screen" id="ranking">
+    <div class="panel">
+      <h2 style="margin:0">Ranking dos Reinantes</h2>
+      <p style="margin:6px 0 12px">Salve sua melhor pontuação e veja quem está no topo!</p>
+      <div class="grid2">
+        <div class="card">
+          <label>Seu nome</label>
+          <input id="playerName" class="in" placeholder="Digite seu nome" style="width:100%; padding:12px; border-radius:12px; border:2px solid #e5eef6" />
+          <div style="display:flex; gap:10px; margin-top:10px">
+            <button class="btn primary" onclick="saveScore()">Salvar sua Pontuação</button>
+            <button class="btn ghost" onclick="resetScores()">Limpar Ranking</button>
+          </div>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>#</th><th>Jogador</th><th>Pontos</th></tr></thead>
+            <tbody id="tb"></tbody>
+          </table>
+        </div>
+      </div>
+      <div style="margin-top:14px"><button class="btn ghost" onclick="openScreen('menu')">⬅ Menu</button></div>
+    </div>
+  </section>
+
+  <!-- CONFIG -->
+  <section class="screen" id="config">
+    <div class="panel">
+      <h2 style="margin:0">Configurações</h2>
+      <div class="grid3" style="margin-top:10px">
+        <div class="card"><h3>Ajustar Pontos</h3><p>Use para testes.</p><div style="display:flex; gap:8px"><button class="btn ghost" onclick="addPoints(50)">+50</button><button class="btn ghost" onclick="setPoints(0)">Zerar</button></div></div>
+        <div class="card"><h3>Música</h3><p>Sem áudio neste protótipo.
+        </p></div>
+        <div class="card"><h3>Sobre</h3><p>“A graça me leva para o Reino, e o Reino me ensina a viver a graça todos os dias.”</p></div>
+      </div>
+      <div style="margin-top:14px"><button class="btn ghost" onclick="openScreen('menu')">⬅ Menu</button></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div>📖 Efésios 2:8-9 • Mateus 6:33 • Gálatas 5:1;13</div>
+  <div id="rankText">Meta: 1000 pts para “Mais que Vencedor”</div>
+</footer>
+
+  </div>  <script>
+    // ---------- Estado & Utilidades ----------
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+    const S = {
+      points: Number(localStorage.getItem('acl_points')||0),
+      ranking: JSON.parse(localStorage.getItem('acl_ranking')||'[]')
+    };
+
+    function openScreen(id){
+      $$('.screen').forEach(s=>s.classList.remove('active'));
+      const el = document.getElementById(id); if(el) el.classList.add('active');
+      if(id==='ranking') renderRanking();
+    }
+
+    function setPoints(v){ S.points = Math.max(0, v); syncPoints(); }
+    function addPoints(v){ setPoints(S.points + v); pop(`+${v} ✨`); }
+    function syncPoints(){
+      localStorage.setItem('acl_points', S.points);
+      $('#points').textContent = S.points;
+      const {label,text} = getRank(S.points);
+      $('#rankBadge').textContent = label;
+      $('#rankText').textContent = text;
+    }
+
+    function getRank(p){
+      if(p>=801) return {label:'Mais que Vencedor', text:'👑 Parabéns! Você alcançou o topo!'};
+      if(p>=601) return {label:'Reinante com Cristo', text:'Rumo à Coroa da Vida!'};
+      if(p>=401) return {label:'Guardião da Cidade', text:'Continue firme no caminho!'};
+      if(p>=201) return {label:'Guerreiro da Luz', text:'A fé está crescendo!'};
+      return {label:'Aprendiz do Reino', text:'Junte pontos para subir de nível!'};
+    }
+
+    function pop(txt){
+      const b = document.createElement('div');
+      b.textContent = txt; b.style.position='fixed'; b.style.right='18px'; b.style.bottom='78px'; b.style.background='var(--accent)'; b.style.color='#5a3300';
+      b.style.padding='10px 14px'; b.style.fontWeight='900'; b.style.borderRadius='12px'; b.style.boxShadow='0 6px 18px rgba(0,0,0,.2)';
+      document.body.appendChild(b); setTimeout(()=>{b.style.transition='all .6s ease'; b.style.opacity='0'; b.style.transform='translateY(20px)';}, 50);
+      setTimeout(()=>b.remove(), 950);
+    }
+
+    // ---------- Memory Game ----------
+    const MEM_ICONS = ['🦁','🛡️','🕊️','🤝','📖','👑','🧭','🧱'];
+    let memFirst=null, memLock=false, memTries=0, memMatched=0;
+
+    function startMemory(){
+      openScreen('memory');
+      memFirst=null; memLock=false; memTries=0; memMatched=0; $('#memTries').textContent='0';
+      const items = shuffle([...MEM_ICONS, ...MEM_ICONS]);
+      const grid = $('#memoryGrid'); grid.innerHTML='';
+      items.forEach((ico)=>{
+        const tile = document.createElement('div'); tile.className='tile'; tile.dataset.icon=ico;
+        tile.innerHTML = `<div class="face back">🔒</div><div class="face front">${ico}</div>`;
+        tile.addEventListener('click',()=>flip(tile)); grid.appendChild(tile);
+      });
+    }
+    function flip(tile){
+      if(memLock || tile.classList.contains('flipped') || tile.classList.contains('matched')) return;
+      tile.classList.add('flipped');
+      if(!memFirst){ memFirst=tile; return; }
+      memTries++; $('#memTries').textContent=memTries;
+      if(memFirst.dataset.icon===tile.dataset.icon){
+        memMatched+=2; memFirst.classList.add('matched'); tile.classList.add('matched'); memFirst=null; addPoints(20);
+        if(memMatched===MEM_ICONS.length*2){ setTimeout(()=>{ pop('BÔNUS Memória +60'); addPoints(60); openScreen('levels'); }, 400); }
+      } else {
+        memLock=true; setTimeout(()=>{ memFirst.classList.remove('flipped'); tile.classList.remove('flipped'); memFirst=null; memLock=false; }, 650);
+      }
+    }
+
+    // ---------- Quiz ----------
+    const QUIZ = [
+      {q:'A Porta de Entrada para a Cidade do Rei é?', a:['Ser bonzinho','Graça de Deus em Jesus','Dinheiro'], c:1, verse:'Ef 2:8-9'},
+      {q:'Depois de entrar pela Porta da Graça, o que aprendemos?', a:['As regras do Reino com Jesus','A pular muros','Ganhar pontos sem obedecer'], c:0, verse:'Mt 6:33'},
+      {q:'Liberdade bíblica é…', a:['Fazer tudo que eu quiser','Dizer não ao pecado e sim a Jesus','Nunca obedecer'], c:1, verse:'Gl 5:1'},
+      {q:'Uma chave para a liberdade é…', a:['Mentir quando preciso','Persistência com fé','Inveja'], c:1, verse:'Hb 12:1 (princípio)'},
+      {q:'O que Jesus quer dentro do Reino?', a:['Que amemos e sirvamos uns aos outros','Que briguemos sempre','Que ignoremos a Palavra'], c:0, verse:'Gl 5:13'}
+    ];
+
+    let qIndex=0, qScore=0; 
+
+    function startQuiz(){
+      qIndex=0; qScore=0; openScreen('quiz'); renderQuiz();
+    }
+
+    function renderQuiz(){
+      const box = $('#quizBox');
+      if(qIndex>=QUIZ.length){
+        const pts = 40 + qScore*20; // bônus + por acerto
+        box.innerHTML = `<h2>Treino/Obediência — Quiz</h2>
+          <p>Parabéns! Você concluiu o treino. Acertos: <b>${qScore}/${QUIZ.length}</b></p>
+          <p>Bônus de conclusão: <b>${pts}</b> pontos!</p>
+          <div style="display:flex; gap:10px">
+            <button class="btn primary" onclick="finishQuiz(${pts})">Receber Pontos</button>
+            <button class="btn ghost" onclick="openScreen('levels')">Sair</button>
+          </div>`; return;
+      }
+      const {q,a, c, verse} = QUIZ[qIndex];
+      box.innerHTML = `<h2>Treino/Obediência — Quiz</h2>
+        <div class="q">${q}</div>
+        ${a.map((t,i)=>`<label class='opt' data-i='${i}' onclick='answer(${i})'>${t}</label>`).join('')}
+        <div style='margin-top:10px'><small>Verso: ${verse}</small></div>
+        <div style='margin-top:10px'><button class="btn ghost" onclick="openScreen('levels')">⬅ Sair</button></div>`;
+    }
+
+    function answer(i){
+      const {c} = QUIZ[qIndex];
+      $$('.opt').forEach((el,idx)=>{
+        if(idx===c) el.classList.add('correct');
+        if(idx===i && i!==c) el.classList.add('wrong');
+        el.style.pointerEvents='none';
+      });
+      if(i===c){ qScore++; addPoints(15); }
+      setTimeout(()=>{ qIndex++; renderQuiz(); }, 700);
+    }
+
+    function finishQuiz(pts){ addPoints(pts); openScreen('levels'); }
+
+    // ---------- Puzzle (3x3 troca) ----------
+    let pzFirst=null, pzMoves=0;
+    function startPuzzle(){
+      openScreen('puzzle'); pzFirst=null; pzMoves=0; $('#pzMoves').textContent='0';
+      const grid = $('#puzzleGrid'); grid.innerHTML='';
+      const order = shuffle([...Array(9).keys()]);
+      order.forEach(i=>{
+        const d=document.createElement('button'); d.className='pz'; d.style.backgroundPosition=`${-(i%3)*106}px ${-Math.floor(i/3)*106}px`;
+        d.dataset.idx=i; d.addEventListener('click',()=>pickPz(d)); grid.appendChild(d);
+      });
+    }
+    function pickPz(el){
+      if(!pzFirst){ pzFirst=el; el.style.outline='3px solid var(--secondary)'; return; }
+      if(pzFirst===el){ pzFirst.style.outline='none'; pzFirst=null; return; }
+      const a=pzFirst, b=el; a.style.outline='none';
+      // swap dataset.idx and background positions
+      const ia=a.dataset.idx, ib=b.dataset.idx;
+      a.dataset.idx=ib; b.dataset.idx=ia;
+      a.style.backgroundPosition = `${-(ib%3)*106}px ${-Math.floor(ib/3)*106}px`;
+      b.style.backgroundPosition = `${-(ia%3)*106}px ${-Math.floor(ia/3)*106}px`;
+      pzFirst=null; pzMoves++; $('#pzMoves').textContent=pzMoves;
+      // check solved
+      const ok = $$('#puzzleGrid .pz').every((e,idx)=> Number(e.dataset.idx)===idx);
+      if(ok){ addPoints(100); setTimeout(()=>{ pop('Quebra-cabeça concluído! +100'); openScreen('levels'); }, 350); }
+    }
+
+    // ---------- Shabbat breathing ----------
+    let breathLeft=5, breathing=false, breathTimer=null;
+    const breathBtn = ()=> $('#breathBtn');
+    function startBreath(){
+      if(breathing) return; breathing=true; breathLeft=5; $('#breath').textContent=breathLeft; breathBtn().disabled=true;
+      const step=()=>{
+        if(breathLeft<=0){ breathing=false; breathBtn().disabled=false; pop('Descanso concluído +10'); addPoints(10); return; }
+        addPoints(2); breathLeft--; $('#breath').textContent=breathLeft; breathTimer=setTimeout(step, 1200);
+      };
+      step();
+    }
+    $('#breathBtn').addEventListener('click', startBreath);
+
+    // ---------- Ranking ----------
+    function renderRanking(){
+      const tb = $('#tb'); tb.innerHTML='';
+      const data = [...S.ranking].sort((a,b)=>b.points-a.points).slice(0,10);
+      data.forEach((r,i)=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${i+1}</td><td>${escapeHtml(r.name)}</td><td>${r.points}</td>`; tb.appendChild(tr);
+      });
+    }
+
+    function saveScore(){
+      const name = ($('#playerName').value||'Jogador').trim().slice(0,24);
+      S.ranking.push({name, points:S.points, at:Date.now()});
+      localStorage.setItem('acl_ranking', JSON.stringify(S.ranking));
+      renderRanking(); pop('Pontuação salva!');
+    }
+    function resetScores(){ if(confirm('Limpar ranking local?')){ S.ranking=[]; localStorage.setItem('acl_ranking','[]'); renderRanking(); }}
+
+    // ---------- Helpers ----------
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+      return arr;
+    }
+    function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
+
+    // init
+    syncPoints();
+  </script>
+</body>
+</html>
